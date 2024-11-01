@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { db } from "@/db"
 import DashboardWrapper from "@/components/dashboard/dashboard-wrapper"
+import CategoryPageContent from "./components/category-page-content"
 
 interface PageProps {
   params: {
@@ -47,7 +48,7 @@ const Event = async ({ params }: PageProps) => {
 
   return (
     <DashboardWrapper title={`${category.emoji} ${category.name} events`}>
-      {/* <CategoryPageContent hasEvents={hasEvents} category={category} /> */}
+      <CategoryPageContent hasEvents={hasEvents} category={category} />
     </DashboardWrapper>
   )
 }

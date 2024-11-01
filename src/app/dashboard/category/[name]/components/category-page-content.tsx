@@ -2,15 +2,6 @@
 
 import { Event, EventCategory } from "@prisma/client"
 import { useQuery } from "@tanstack/react-query"
-import { EmptyCategoryState } from "./empty-category-state"
-import { useEffect, useMemo, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { client } from "@/lib/client"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card } from "@/components/ui/card"
-import { ArrowUpDown, BarChart } from "lucide-react"
-import { isAfter, isToday, startOfMonth, startOfWeek } from "date-fns"
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -23,9 +14,12 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
+import { isAfter, isToday, startOfMonth, startOfWeek } from "date-fns"
+import { ArrowUpDown, BarChart } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+
 import { Button } from "@/components/ui/button"
-import { cn } from "@/utils"
-import { Heading } from "@/components/heading"
 import {
   Table,
   TableBody,
@@ -34,6 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { client } from "@/lib/client"
+
+import Heading from "@/components/common/heading"
+import CustomCard from "@/components/custom/custom-card"
+import { cn } from "@/utils"
+import EmptyCategoryState from "./empty-category-state"
 
 interface CategoryPageContentProps {
   hasEvents: boolean
@@ -247,7 +248,7 @@ const CategoryPageContent = ({
           : sums.thisMonth
 
       return (
-        <Card key={field}>
+        <CustomCard key={field}>
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <p className="text-sm/6 font-medium">
               {field.charAt(0).toUpperCase() + field.slice(1)}
@@ -265,7 +266,7 @@ const CategoryPageContent = ({
                 : "this month"}
             </p>
           </div>
-        </Card>
+        </CustomCard>
       )
     })
   }
@@ -290,7 +291,7 @@ const CategoryPageContent = ({
 
         <TabsContent value={activeTab}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-            <Card className="border-2 border-brand-700">
+            <CustomCard className="border-2 border-brand-700">
               <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <p className="text-sm/6 font-medium">Total Events</p>
                 <BarChart className="size-4 text-muted-foreground" />
@@ -307,7 +308,7 @@ const CategoryPageContent = ({
                     : "this month"}
                 </p>
               </div>
-            </Card>
+            </CustomCard>
 
             <NumericFieldSumCards />
           </div>
@@ -321,7 +322,7 @@ const CategoryPageContent = ({
           </div>
         </div>
 
-        <Card contentClassName="px-6 py-4">
+        <CustomCard contentClassName="px-6 py-4">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -376,7 +377,7 @@ const CategoryPageContent = ({
               )}
             </TableBody>
           </Table>
-        </Card>
+        </CustomCard>
       </div>
 
       <div className="flex items-center justify-end space-x-2 py-4">
