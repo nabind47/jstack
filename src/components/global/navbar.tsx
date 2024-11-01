@@ -7,8 +7,7 @@ import MaxWidthWrapper from "@/components/common/max-width-wrapper"
 import { Button, buttonVariants } from "@/components/ui/button"
 
 const Navbar = async () => {
-  // const user = await currentUser()
-  const user = true
+  const user = await currentUser()
 
   return (
     <nav className="sticky z-[100] h-16 inset-x-0 top-0 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg transition-all">
