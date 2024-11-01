@@ -36,7 +36,7 @@ model User {
 
   eventCategories EventCategory[]
   events          Event[]
-  quota           Quota[]
+  quotas          Quota[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,7 +52,7 @@ model EventCategory {
 
   userId String
   user   User    @relation(fields: [userId], references: [id])
-  event  Event[]
+  events Event[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -7,10 +7,10 @@ import { privateProcedure } from "../procedures"
 import { db } from "@/db"
 import { CATEGORY_NAME_VALIDATOR } from "@/lib/validators/category-validator"
 import { parseColor } from "@/lib/utils"
+import { HTTPException } from "hono/http-exception"
 
 export const categoryRouter = router({
     getEventCategories: privateProcedure.query(async ({ c, ctx }) => {
-
         const categories = await db.eventCategory.findMany({
             where: { userId: ctx.user?.id },
             select: {
@@ -26,30 +26,53 @@ export const categoryRouter = router({
             },
         })
 
-        const categoriesWithCount = await Promise.all(categories.map(async (category) => {
-            const now = new Date()
-            const firstDayOfMonth = startOfMonth(now)
+        const categoriesWithCount = await Promise.all(
+            categories.map(async (category) => {
+                const now = new Date()
+                const firstDayOfMonth = startOfMonth(now)
 
-            const [uniqueFieldCount, eventsCount, lastEvent] = await Promise.all([
-                db.event.findMany({ where: { eventCategory: { id: category.id }, createdAt: { gte: firstDayOfMonth } }, select: { fields: true }, distinct: ["fields"] }).then((events) => {
-                    const fieldNames = new Set<String>()
-                    events.forEach((event) => {
-                        Object.keys(event.fields as Object).forEach((key) => fieldNames.add(key))
-                    })
-                    return fieldNames.size
-                }),
+                const [uniqueFieldCount, eventsCount, lastEvent] = await Promise.all([
+                    db.event
+                        .findMany({
+                            where: {
+                                eventCategory: { id: category.id },
+                                createdAt: { gte: firstDayOfMonth },
+                            },
+                            select: { fields: true },
+                            distinct: ["fields"],
+                        })
+                        .then((events) => {
+                            const fieldNames = new Set<String>()
+                            events.forEach((event) => {
+                                Object.keys(event.fields as Object).forEach((key) =>
+                                    fieldNames.add(key)
+                                )
+                            })
+                            return fieldNames.size
+                        }),
 
-                db.event.count({ where: { eventCategory: { id: category.id }, createdAt: { gte: firstDayOfMonth } } }),
+                    db.event.count({
+                        where: {
+                            eventCategory: { id: category.id },
+                            createdAt: { gte: firstDayOfMonth },
+                        },
+                    }),
 
-                db.event.findFirst({
-                    where: { eventCategory: { id: category.id } },
-                    orderBy: { createdAt: "desc" },
-                    select: { createdAt: true }
-                })
-            ])
+                    db.event.findFirst({
+                        where: { eventCategory: { id: category.id } },
+                        orderBy: { createdAt: "desc" },
+                        select: { createdAt: true },
+                    }),
+                ])
 
-            return { ...category, uniqueFieldCount, eventsCount, lastPing: lastEvent?.createdAt || null }
-        }))
+                return {
+                    ...category,
+                    uniqueFieldCount,
+                    eventsCount,
+                    lastPing: lastEvent?.createdAt || null,
+                }
+            })
+        )
 
         return c.superjson({ categories: categoriesWithCount })
     }),
@@ -109,6 +132,30 @@ export const categoryRouter = router({
         return c.json({ success: true, count: categories.count })
     }),
 
+    pollCategory: privateProcedure
+        .input(z.object({ name: CATEGORY_NAME_VALIDATOR }))
+        .query(async ({ c, ctx, input }) => {
+            const { name } = input
 
+            const category = await db.eventCategory.findUnique({
+                where: { name_userId: { name, userId: ctx.user.id } },
+                include: {
+                    _count: {
+                        select: {
+                            events: true,
+                        },
+                    },
+                },
+            })
 
+            if (!category) {
+                throw new HTTPException(404, {
+                    message: `Category "${name}" not found`,
+                })
+            }
+
+            const hasEvents = category._count.events > 0
+
+            return c.json({ hasEvents })
+        }),
 })

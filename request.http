@@ -1,0 +1,12 @@
+POST http://localhost:3000/api/v1/events HTTP/1.1
+content-type: application/json
+Authorization: Bearer cm2yfvnds000313yozbe0dhoe
+
+{
+    "category": "question",
+    "fields": {
+        "amount": 100,
+        "price": 100
+    },
+    "description": "dummy description"
+}
